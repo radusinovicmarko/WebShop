@@ -1,5 +1,6 @@
 package org.unibl.etf.ip.webshop.models.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.Hibernate;
@@ -24,14 +25,17 @@ public class CategoryEntity {
     @OneToMany(mappedBy = "category")
     @ToString.Exclude
     private List<AttributeEntity> attributes;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id", referencedColumnName = "id")
+    @ToString.Exclude
+    @JsonIgnore
     private CategoryEntity parentCategory;
     @OneToMany(mappedBy = "parentCategory")
     @ToString.Exclude
     private List<CategoryEntity> subcategories;
     @ManyToMany(mappedBy = "categories")
     @ToString.Exclude
+    @JsonIgnore
     private List<ProductEntity> products;
 
     @Override

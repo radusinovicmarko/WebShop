@@ -1,5 +1,6 @@
 package org.unibl.etf.ip.webshop.models.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.Hibernate;
@@ -40,17 +41,27 @@ public class UserEntity {
     @Basic
     @Column(name = "activated", nullable = false)
     private boolean activated;
+    @Basic
+    @Column(name = "contactPhone", nullable = false, length = 20)
+    private String contactPhone;
+    @Basic
+    @Column(name = "location", nullable = false, length = 50)
+    private String location;
     @OneToMany(mappedBy = "user")
     @ToString.Exclude
+    @JsonIgnore
     private Collection<CommentEntity> comments;
     @OneToMany(mappedBy = "user")
     @ToString.Exclude
+    @JsonIgnore
     private Collection<MessageEntity> messages;
     @OneToMany(mappedBy = "buyer")
     @ToString.Exclude
+    @JsonIgnore
     private List<ProductEntity> boughtProducts;
     @OneToMany(mappedBy = "seller")
     @ToString.Exclude
+    @JsonIgnore
     private Collection<ProductEntity> products;
 
     @Override

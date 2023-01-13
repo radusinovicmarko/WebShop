@@ -1,5 +1,6 @@
 package org.unibl.etf.ip.webshop.models.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.Hibernate;
@@ -36,7 +37,7 @@ public class ProductEntity {
     @Basic
     @Column(name = "location", nullable = false, length = 50)
     private String location;
-    @Basic
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private ProductStatus status;
     @Basic
@@ -45,23 +46,27 @@ public class ProductEntity {
     @Basic
     @Column(name = "endDate", nullable = true)
     private Timestamp endDate;
-    @OneToMany(mappedBy = "product")
+    @OneToMany(mappedBy = "product", fetch = FetchType.EAGER)
     @ToString.Exclude
     private List<CommentEntity> comments;
-    @OneToMany(mappedBy = "product")
+    @OneToMany(mappedBy = "product", fetch = FetchType.EAGER)
     @ToString.Exclude
     private List<PictureEntity> pictures;
     @ManyToOne
     @JoinColumn(name = "buyer_id", referencedColumnName = "id")
+    @ToString.Exclude
     private UserEntity buyer;
     @ManyToOne
     @JoinColumn(name = "seller_id", referencedColumnName = "id", nullable = false)
+    @ToString.Exclude
     private UserEntity seller;
+    @OneToMany(mappedBy = "product", fetch = FetchType.EAGER)
+    @ToString.Exclude
+    private List<ProductAttributeEntity> attributes;
     @ManyToMany
     @JoinTable(name = "product_category", joinColumns = @JoinColumn(name = "product_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
     @ToString.Exclude
-    private  List<CategoryEntity> categories;
-
+    private List<CategoryEntity> categories;
 
     @Override
     public boolean equals(Object o) {

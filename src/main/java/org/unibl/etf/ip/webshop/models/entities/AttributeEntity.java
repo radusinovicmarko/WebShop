@@ -1,10 +1,12 @@
 package org.unibl.etf.ip.webshop.models.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.Hibernate;
 import org.unibl.etf.ip.webshop.models.enums.AttributeType;
 
+import java.util.List;
 import java.util.Objects;
 
 @Getter
@@ -21,12 +23,18 @@ public class AttributeEntity {
     @Basic
     @Column(name = "name", nullable = false, length = 50)
     private String name;
-    @Basic
+    @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = true)
     private AttributeType type;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", referencedColumnName = "id", nullable = false)
+    @ToString.Exclude
+    @JsonIgnore
     private CategoryEntity category;
+    @OneToMany(mappedBy = "attribute")
+    @ToString.Exclude
+    @JsonIgnore
+    private List<ProductAttributeEntity> products;
 
     @Override
     public boolean equals(Object o) {

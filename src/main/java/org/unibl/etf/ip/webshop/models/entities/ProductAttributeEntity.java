@@ -12,26 +12,30 @@ import java.util.Objects;
 @ToString
 @RequiredArgsConstructor
 @Entity
-@Table(name = "picture")
-public class PictureEntity {
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+@Table(name = "product_attribute")
+@IdClass(ProductAttributeKey.class)
+public class ProductAttributeEntity {
     @Id
-    @Column(name = "id", nullable = false)
-    private int id;
-    @Basic
-    @Column(name = "pictureURL", nullable = false, length = 50)
-    private String pictureUrl;
     @ManyToOne
-    @JoinColumn(name = "product_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "attribute_id", referencedColumnName = "id")
+    @ToString.Exclude
+    private AttributeEntity attribute;
+    @Id
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", referencedColumnName = "id")
+    @ToString.Exclude
     @JsonIgnore
     private ProductEntity product;
+    @Basic
+    @Column(name = "value", nullable = false, length = 100)
+    private String value;
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
-        PictureEntity that = (PictureEntity) o;
-        return Objects.equals(id, that.id);
+        ProductAttributeEntity that = (ProductAttributeEntity) o;
+        return attribute != null && Objects.equals(attribute, that.attribute);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package org.unibl.etf.ip.webshop.models.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.Hibernate;
@@ -29,6 +30,7 @@ public class CommentEntity {
     private UserEntity user;
     @ManyToOne
     @JoinColumn(name = "product_id", referencedColumnName = "id", nullable = false)
+    @JsonIgnore
     private ProductEntity product;
 
     @Override

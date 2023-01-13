@@ -30,7 +30,7 @@ public class AdminEntity {
     @Basic
     @Column(name = "password", nullable = false, length = 50)
     private String password;
-    @Basic
+    @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     private AdminRole role;
 
