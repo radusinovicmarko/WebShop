@@ -2,34 +2,52 @@ package org.unibl.etf.ip.webshop.services.impl;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.unibl.etf.ip.webshop.models.dto.AccountActivationResponseDTO;
-import org.unibl.etf.ip.webshop.models.dto.UserDTO;
-import org.unibl.etf.ip.webshop.models.dto.UserRegisterDTO;
+import org.unibl.etf.ip.webshop.exceptions.ConflictException;
+import org.unibl.etf.ip.webshop.exceptions.UnauthorizedException;
+import org.unibl.etf.ip.webshop.models.dto.*;
 import org.unibl.etf.ip.webshop.models.entities.UserEntity;
+import org.unibl.etf.ip.webshop.repositories.MessageRepository;
+import org.unibl.etf.ip.webshop.repositories.ProductRepository;
 import org.unibl.etf.ip.webshop.repositories.UserRepository;
 import org.unibl.etf.ip.webshop.services.AuthService;
+import org.unibl.etf.ip.webshop.services.ProductService;
 import org.unibl.etf.ip.webshop.services.UserService;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
 public class UserServiceImpl implements UserService {
     private final UserRepository repository;
+    private final ProductRepository productRepository;
+    private final MessageRepository messageRepository;
     private final AuthService authService;
     private final ModelMapper mapper;
+    private final PasswordEncoder passwordEncoder;
     @Autowired
-    public UserServiceImpl(UserRepository repository, AuthService authService, ModelMapper mapper) {
+    public UserServiceImpl(UserRepository repository, ProductRepository productRepository, MessageRepository messageRepository,
+                           AuthService authService, ModelMapper mapper, PasswordEncoder passwordEncoder) {
         this.repository = repository;
+        this.productRepository = productRepository;
+        this.messageRepository = messageRepository;
         this.authService = authService;
         this.mapper = mapper;
+        this.passwordEncoder = passwordEncoder;
     }
     @Override
     public AccountActivationResponseDTO register(UserRegisterDTO request) {
         UserEntity userEntity = mapper.map(request, UserEntity.class);
-        // TODO: Throw Exception
         if (repository.existsByUsername(userEntity.getUsername()))
-            return null;
+            throw new ConflictException();
+        userEntity.setId(null);
+        userEntity.setPassword(passwordEncoder.encode(userEntity.getPassword()));
         userEntity = repository.saveAndFlush(userEntity);
         authService.addPin(userEntity.getUsername(), userEntity.getEmail());
         return mapper.map(userEntity, AccountActivationResponseDTO.class);
@@ -37,8 +55,45 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO activateAccount(String username) {
-        UserEntity user = repository.findByUsername(username);
-        user.setActivated(true);
-        return mapper.map(repository.saveAndFlush(user), UserDTO.class);
+        Optional<UserEntity> user = repository.findByUsername(username);
+        if (user.isEmpty())
+            throw new UnauthorizedException();
+        user.get().setActivated(true);
+        return mapper.map(repository.saveAndFlush(user.get()), UserDTO.class);
+    }
+
+    @Override
+    public UserDTO update(Integer id, UserUpdateDTO request) {
+        Optional<UserEntity> userEntity = repository.findById(id);
+        if (userEntity.isEmpty())
+            throw new UnauthorizedException();
+        if (passwordEncoder.matches(request.getPassword(), userEntity.get().getPassword())) {
+            UserEntity user = userEntity.get();
+            user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+            user.setFirstName(request.getFirstName());
+            user.setLastName(request.getLastName());
+            user.setEmail(request.getEmail());
+            user.setLocation(request.getLocation());
+            user.setContactPhone(request.getContactPhone());
+            user.setAvatarUrl(request.getAvatarUrl());
+            return mapper.map(repository.saveAndFlush(user), UserDTO.class);
+        }
+        else
+            throw new UnauthorizedException();
+    }
+
+    @Override
+    public Page<ProductDTO> findAllPurchases(Pageable page, Integer id) {
+        return productRepository.findAllByBuyer_Id(page, id).map(p -> mapper.map(p, ProductDTO.class));
+    }
+
+    @Override
+    public Page<ProductDTO> findAllProducts(Pageable page, Integer id) {
+        return productRepository.findAllBySeller_Id(page, id).map(p -> mapper.map(p, ProductDTO.class));
+    }
+
+    @Override
+    public List<MessageDTO> findAllMessages(Integer id) {
+        return messageRepository.findAllByUser_Id(id).stream().map(m -> mapper.map(m, MessageDTO.class)).collect(Collectors.toList());
     }
 }

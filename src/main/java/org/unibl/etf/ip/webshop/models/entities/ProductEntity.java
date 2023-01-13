@@ -21,7 +21,7 @@ public class ProductEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     @Column(name = "id", nullable = false)
-    private int id;
+    private Integer id;
     @Basic
     @Column(name = "title", nullable = false, length = 50)
     private String title;
@@ -44,8 +44,8 @@ public class ProductEntity {
     @Column(name = "publishDate", nullable = false)
     private Timestamp publishDate;
     @Basic
-    @Column(name = "endDate", nullable = true)
-    private Timestamp endDate;
+    @Column(name = "purchaseDate", nullable = true)
+    private Timestamp purchaseDate;
     @OneToMany(mappedBy = "product", fetch = FetchType.EAGER)
     @ToString.Exclude
     private List<CommentEntity> comments;
@@ -60,10 +60,10 @@ public class ProductEntity {
     @JoinColumn(name = "seller_id", referencedColumnName = "id", nullable = false)
     @ToString.Exclude
     private UserEntity seller;
-    @OneToMany(mappedBy = "product", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "product", fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     @ToString.Exclude
     private List<ProductAttributeEntity> attributes;
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.PERSIST)
     @JoinTable(name = "product_category", joinColumns = @JoinColumn(name = "product_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
     @ToString.Exclude
     private List<CategoryEntity> categories;

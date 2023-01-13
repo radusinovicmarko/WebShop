@@ -5,6 +5,6 @@ import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class UserDTO extends UserBaseDTO {
+public class UserDTO extends UserBaseDTO implements ILoginResponseDTO {
     private String username;
 }

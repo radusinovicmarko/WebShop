@@ -2,11 +2,9 @@ package org.unibl.etf.ip.webshop.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.unibl.etf.ip.webshop.models.dto.AccountActivationRequestDTO;
-import org.unibl.etf.ip.webshop.models.dto.AccountActivationResponseDTO;
-import org.unibl.etf.ip.webshop.models.dto.UserDTO;
-import org.unibl.etf.ip.webshop.models.dto.UserRegisterDTO;
+import org.unibl.etf.ip.webshop.models.dto.*;
 import org.unibl.etf.ip.webshop.services.AuthService;
 import org.unibl.etf.ip.webshop.services.UserService;
 
@@ -23,6 +21,13 @@ public class AuthController {
     @PostMapping("/register")
     public AccountActivationResponseDTO register(@RequestBody UserRegisterDTO request) {
         return userService.register(request);
+    }
+    @PostMapping("/login")
+    public ResponseEntity<ILoginResponseDTO> login(@RequestBody LoginRequestDTO request) {
+        ILoginResponseDTO response = authService.login(request);
+        if (response instanceof UserDTO)
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
     }
     @PostMapping("/activate")
     public UserDTO activateAccount(@RequestBody AccountActivationRequestDTO request) {

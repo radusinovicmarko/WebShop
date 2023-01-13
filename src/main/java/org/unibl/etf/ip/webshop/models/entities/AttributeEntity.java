@@ -19,7 +19,7 @@ public class AttributeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     @Column(name = "id", nullable = false)
-    private int id;
+    private Integer id;
     @Basic
     @Column(name = "name", nullable = false, length = 50)
     private String name;

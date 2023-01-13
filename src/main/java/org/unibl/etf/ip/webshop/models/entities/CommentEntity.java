@@ -18,7 +18,7 @@ public class CommentEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     @Column(name = "id", nullable = false)
-    private int id;
+    private Integer id;
     @Basic
     @Column(name = "content", nullable = false, length = 250)
     private String content;

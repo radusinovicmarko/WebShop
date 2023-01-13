@@ -17,9 +17,9 @@ public class PictureEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     @Column(name = "id", nullable = false)
-    private int id;
+    private Integer id;
     @Basic
-    @Column(name = "pictureURL", nullable = false, length = 50)
+    @Column(name = "pictureURL", nullable = false, length = 250)
     private String pictureUrl;
     @ManyToOne
     @JoinColumn(name = "product_id", referencedColumnName = "id", nullable = false)

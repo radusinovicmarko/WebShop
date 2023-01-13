@@ -10,6 +10,7 @@ import org.unibl.etf.ip.webshop.models.entities.ProductEntity;
 import java.util.List;
 
 public interface ProductRepository extends JpaRepository<ProductEntity, Integer> {
-    public Page<ProductEntity> findAllByCategories_IdIn(Pageable page, List<Integer> ids);
-    public Page<ProductEntity> findAllByBuyer_Id(Pageable page, Integer id);
+    Page<ProductEntity> findAllByCategories_IdIn(Pageable page, List<Integer> ids);
+    Page<ProductEntity> findAllByBuyer_Id(Pageable page, Integer id);
+    Page<ProductEntity> findAllBySeller_Id(Pageable page, Integer id);
 }

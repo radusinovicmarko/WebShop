@@ -8,16 +8,17 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.unibl.etf.ip.webshop.models.dto.CommentRequestDTO;
-import org.unibl.etf.ip.webshop.models.dto.ProductDTO;
-import org.unibl.etf.ip.webshop.models.entities.CategoryEntity;
-import org.unibl.etf.ip.webshop.models.entities.CommentEntity;
-import org.unibl.etf.ip.webshop.repositories.CategoryRepository;
-import org.unibl.etf.ip.webshop.repositories.CommentRepository;
-import org.unibl.etf.ip.webshop.repositories.ProductRepository;
+import org.unibl.etf.ip.webshop.exceptions.BadRequestException;
+import org.unibl.etf.ip.webshop.exceptions.NotFoundException;
+import org.unibl.etf.ip.webshop.models.dto.*;
+import org.unibl.etf.ip.webshop.models.entities.*;
+import org.unibl.etf.ip.webshop.models.enums.ProductStatus;
+import org.unibl.etf.ip.webshop.repositories.*;
 import org.unibl.etf.ip.webshop.services.ProductService;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Transactional
 @Service
@@ -25,15 +26,21 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository repository;
     private final CategoryRepository categoryRepository;
     private final CommentRepository commentRepository;
+    private final PictureRepository pictureRepository;
+    private final ProductAttributeEntityRepository productAttributeEntityRepository;
     private final ModelMapper mapper;
     @PersistenceContext
     private EntityManager entityManager;
 
     @Autowired
-    public ProductServiceImpl(ProductRepository repository, CategoryRepository categoryRepository, CommentRepository commentRepository, ModelMapper mapper) {
+    public ProductServiceImpl(ProductRepository repository, CategoryRepository categoryRepository,
+                              CommentRepository commentRepository, PictureRepository pictureRepository,
+                              ProductAttributeEntityRepository productAttributeEntityRepository, ModelMapper mapper) {
         this.repository = repository;
         this.categoryRepository = categoryRepository;
         this.commentRepository = commentRepository;
+        this.pictureRepository = pictureRepository;
+        this.productAttributeEntityRepository = productAttributeEntityRepository;
         this.mapper = mapper;
     }
     @Override
@@ -43,7 +50,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductDTO findById(Integer id) {
-        return mapper.map(repository.findById(id), ProductDTO.class);
+        return mapper.map(repository.findById(id).orElseThrow(NotFoundException::new), ProductDTO.class);
     }
 
     @Override
@@ -54,14 +61,55 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Page<ProductDTO> findAllByBuyer(Pageable page, Integer buyerId) {
-        return repository.findAllByBuyer_Id(page, buyerId).map(p -> mapper.map(p, ProductDTO.class));
+    public ProductDTO insert(NewProductDTO request) {
+        ProductEntity productEntity = mapper.map(request, ProductEntity.class);
+        CategoryEntity category = categoryRepository.findById(request.getCategoryId()).orElseThrow(BadRequestException::new);
+        productEntity.setId(null);
+        productEntity.setStatus(ProductStatus.Active);
+        productEntity.setNewProduct(true);
+        productEntity.setCategories(new ArrayList<>());
+        productEntity.getCategories().add(category);
+        for (ProductAttributeEntity pa : productEntity.getAttributes())
+            pa.setProduct(productEntity);
+        category.getProducts().add(productEntity);
+        productEntity = repository.saveAndFlush(productEntity);
+        for (PictureEntity picture : productEntity.getPictures()) {
+            picture.setId(null);
+            picture.setProduct(productEntity);
+            pictureRepository.saveAndFlush(picture);
+        }
+        for (ProductAttributeEntity pa : productEntity.getAttributes()) {
+            pa.setProduct(productEntity);
+            productAttributeEntityRepository.saveAndFlush(pa);
+        }
+        return mapper.map(productEntity, ProductDTO.class);
     }
 
     @Override
-    public CommentEntity insert(CommentRequestDTO comment) {
-        CommentEntity entity = commentRepository.saveAndFlush(mapper.map(comment, CommentEntity.class));
-        entityManager.refresh(entity);
-        return entity;
+    public ProductDTO buy(Integer id, PurchaseDTO purchaseDTO) {
+        ProductEntity product = repository.findById(id).orElseThrow(NotFoundException::new);
+        if (product.getBuyer() != null || Objects.equals(product.getSeller().getId(), purchaseDTO.getBuyerId()))
+            throw new BadRequestException();
+        product.setBuyer(new UserEntity());
+        product.getBuyer().setId(purchaseDTO.getBuyerId());
+        product.setPurchaseDate(purchaseDTO.getPurchaseDate());
+        product.setStatus(ProductStatus.Sold);
+        return mapper.map(repository.saveAndFlush(product), ProductDTO.class);
+    }
+
+    @Override
+    public CommentDTO addComment(CommentRequestDTO comment) {
+        CommentEntity commentEntity = mapper.map(comment, CommentEntity.class);
+        commentEntity.setId(null);
+        commentEntity = commentRepository.saveAndFlush(commentEntity);
+        entityManager.refresh(commentEntity);
+        return mapper.map(commentEntity, CommentDTO.class);
+    }
+
+    @Override
+    public ProductDTO delete(Integer id) {
+        ProductEntity product = repository.findById(id).orElseThrow(NotFoundException::new);
+        product.setStatus(ProductStatus.Inactive);
+        return mapper.map(repository.saveAndFlush(product), ProductDTO.class);
     }
 }

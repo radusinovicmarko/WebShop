@@ -7,4 +7,5 @@ import lombok.EqualsAndHashCode;
 @Data
 public class UserUpdateDTO extends UserBaseDTO {
     private String password;
+    private String newPassword;
 }

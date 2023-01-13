@@ -6,6 +6,6 @@ import java.io.Serializable;
 
 @Data
 public class ProductAttributeKey implements Serializable {
-    private int attribute;
-    private int product;
+    private Integer attribute;
+    private Integer product;
 }

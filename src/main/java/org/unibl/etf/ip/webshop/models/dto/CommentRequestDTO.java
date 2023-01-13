@@ -8,6 +8,6 @@ import java.sql.Timestamp;
 public class CommentRequestDTO {
     private String content;
     private Timestamp dateTime;
-    private int userId;
-    private int productId;
+    private Integer userId;
+    private Integer productId;
 }

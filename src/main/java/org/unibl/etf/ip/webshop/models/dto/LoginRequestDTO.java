@@ -3,6 +3,7 @@ package org.unibl.etf.ip.webshop.models.dto;
 import lombok.Data;
 
 @Data
-public class AccountActivationResponseDTO implements ILoginResponseDTO {
+public class LoginRequestDTO {
     private String username;
+    private String password;
 }

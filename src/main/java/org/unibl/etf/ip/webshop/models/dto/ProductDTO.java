@@ -14,7 +14,7 @@ import java.util.List;
 
 @Data
 public class ProductDTO {@GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Integer id;
     private String title;
     private String description;
     private BigDecimal price;
@@ -22,9 +22,10 @@ public class ProductDTO {@GeneratedValue(strategy = GenerationType.IDENTITY)
     private String location;
     private ProductStatus status;
     private Timestamp publishDate;
-    private Timestamp endDate;
-    private List<CommentEntity> comments;
-    private List<PictureEntity> pictures;
-    private UserEntity seller;
-    private List<ProductAttributeEntity> attributes;
+    private Timestamp purchaseDate;
+    private List<CommentDTO> comments;
+    private List<PictureDTO> pictures;
+    private UserDTO seller;
+    private UserDTO buyer;
+    private List<ProductAttributeDTO> attributes;
 }

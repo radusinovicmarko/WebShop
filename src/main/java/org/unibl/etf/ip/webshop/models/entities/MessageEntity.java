@@ -16,16 +16,16 @@ public class MessageEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     @Column(name = "id", nullable = false)
-    private int id;
+    private Integer id;
     @Basic
-    @Column(name = "title", nullable = false, length = 50)
+    @Column(name = "title", nullable = false, length = 150)
     private String title;
     @Basic
-    @Column(name = "content", nullable = false, length = 250)
+    @Column(name = "content", nullable = false, length = 500)
     private String content;
     @Basic
-    @Column(name = "read", nullable = false)
-    private boolean read;
+    @Column(name = "messageRead", nullable = false)
+    private boolean messageRead;
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
     private UserEntity user;

@@ -19,7 +19,7 @@ public class UserEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     @Column(name = "id", nullable = false)
-    private int id;
+    private Integer id;
     @Basic
     @Column(name = "firstName", nullable = false, length = 30)
     private String firstName;
@@ -30,7 +30,7 @@ public class UserEntity {
     @Column(name = "username", nullable = false, length = 50)
     private String username;
     @Basic
-    @Column(name = "password", nullable = false, length = 50)
+    @Column(name = "password", nullable = false, length = 100)
     private String password;
     @Basic
     @Column(name = "avatarURL", nullable = true, length = 50)

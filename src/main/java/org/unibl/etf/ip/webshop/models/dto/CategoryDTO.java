@@ -11,7 +11,7 @@ import java.util.List;
 
 @Data
 public class CategoryDTO {
-    private int id;
+    private Integer id;
     private String name;
     private List<AttributeEntity> attributes;
 }
