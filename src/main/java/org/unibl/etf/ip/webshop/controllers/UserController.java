@@ -1,5 +1,6 @@
 package org.unibl.etf.ip.webshop.controllers;
 
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,7 +24,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public UserDTO update(@PathVariable Integer id, @RequestBody UserUpdateDTO request, Authentication authentication) {
+    public UserDTO update(@PathVariable Integer id, @RequestBody @Valid UserUpdateDTO request, Authentication authentication) {
         return service.update(id, request, authentication);
     }
 

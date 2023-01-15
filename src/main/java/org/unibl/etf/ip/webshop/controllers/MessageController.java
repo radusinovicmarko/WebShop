@@ -1,5 +1,6 @@
 package org.unibl.etf.ip.webshop.controllers;
 
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +22,7 @@ public class MessageController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public MessageDTO crete(@RequestBody MessageRequestDTO request) {
+    public MessageDTO crete(@RequestBody @Valid MessageRequestDTO request) {
         return service.create(request);
     }
 }

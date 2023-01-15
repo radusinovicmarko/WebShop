@@ -1,5 +1,6 @@
 package org.unibl.etf.ip.webshop.controllers;
 
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -36,14 +37,14 @@ public class ProductController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ProductDTO insert(@RequestBody NewProductDTO request) {
+    public ProductDTO insert(@RequestBody @Valid NewProductDTO request) {
         return service.insert(request);
     }
 
     // TODO: update product endpoint?
 
     @PostMapping("/{id}/purchase")
-    public ProductDTO buy(@PathVariable Integer id, @RequestBody PurchaseDTO purchaseDTO, Authentication authentication) {
+    public ProductDTO buy(@PathVariable Integer id, @RequestBody @Valid PurchaseDTO purchaseDTO, Authentication authentication) {
         return service.buy(id, purchaseDTO, authentication);
     }
 
@@ -54,7 +55,7 @@ public class ProductController {
 
     @PostMapping("/{id}/comments")
     @ResponseStatus(HttpStatus.CREATED)
-    public CommentDTO addComment(@RequestBody CommentRequestDTO comment, @PathVariable Integer id) {
+    public CommentDTO addComment(@RequestBody @Valid CommentRequestDTO comment, @PathVariable Integer id) {
         comment.setProductId(id);
         return service.addComment(comment);
     }
