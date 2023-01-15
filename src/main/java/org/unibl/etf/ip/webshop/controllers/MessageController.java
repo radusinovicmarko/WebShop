@@ -1,6 +1,7 @@
 package org.unibl.etf.ip.webshop.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.unibl.etf.ip.webshop.models.dto.MessageDTO;
 import org.unibl.etf.ip.webshop.models.dto.MessageRequestDTO;
@@ -19,6 +20,7 @@ public class MessageController {
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public MessageDTO crete(@RequestBody MessageRequestDTO request) {
         return service.create(request);
     }

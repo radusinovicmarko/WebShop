@@ -59,7 +59,7 @@ public class ProductServiceImpl implements ProductService {
     public Page<ProductDTO> findAllByCategory(Pageable page, Integer categoryId) {
         List<Integer> categoryIds = new java.util.ArrayList<>(categoryRepository.findAllChildren(categoryId).stream().map(CategoryEntity::getId).toList());
         categoryIds.add(categoryId);
-        return repository.findAllByCategories_IdIn(page, categoryIds).map(p -> mapper.map(p, ProductDTO.class));
+        return repository.findAllByCategories_IdInAndStatus(page, categoryIds, ProductStatus.Active).map(p -> mapper.map(p, ProductDTO.class));
     }
 
     @Override
@@ -88,10 +88,15 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductDTO buy(Integer id, PurchaseDTO purchaseDTO) {
+    public ProductDTO buy(Integer id, PurchaseDTO purchaseDTO, Authentication authentication) {
         ProductEntity product = repository.findById(id).orElseThrow(NotFoundException::new);
         if (product.getBuyer() != null || Objects.equals(product.getSeller().getId(), purchaseDTO.getBuyerId()))
             throw new BadRequestException();
+        if (product.getStatus() != ProductStatus.Active)
+            throw new BadRequestException();
+        JwtUserDTO jwtUser = (JwtUserDTO) authentication.getPrincipal();
+        if (jwtUser.getId().equals(product.getSeller().getId()))
+            throw new UnauthorizedException();
         product.setBuyer(new UserEntity());
         product.getBuyer().setId(purchaseDTO.getBuyerId());
         product.setPurchaseDate(purchaseDTO.getPurchaseDate());
@@ -114,6 +119,8 @@ public class ProductServiceImpl implements ProductService {
         ProductEntity product = repository.findById(id).orElseThrow(NotFoundException::new);
         if (!Objects.equals(jwtUser.getId(), product.getSeller().getId()))
             throw new UnauthorizedException();
+        if (product.getStatus() != ProductStatus.Active)
+            throw new BadRequestException();
         product.setStatus(ProductStatus.Inactive);
         return mapper.map(repository.saveAndFlush(product), ProductDTO.class);
     }

@@ -11,19 +11,14 @@
       "roles": ["RegisteredUser"]
     },
     {
-      "methods": ["POST"],
-      "pattern": "/api/v1/products/*/purchase",
+      "methods": ["POST", "DELETE"],
+      "pattern": "/api/v1/products/**",
       "roles": ["RegisteredUser"]
     },
     {
-      "methods": ["DELETE"],
-      "pattern": "/api/v1/products/*",
-      "roles": ["RegisteredUser"]
-    },
-    {
-      "methods": ["POST"],
-      "pattern": "/api/v1/products/*/comments",
-      "roles": ["RegisteredUser"]
+      "methods": ["GET"],
+      "pattern": "/api/v1/products/**",
+      "roles": []
     },
     {
       "methods": ["GET"],
@@ -31,18 +26,23 @@
       "roles": []
     },
     {
-      "methods": ["GET"],
-      "pattern": "/api/v1/users/*?/purchases",
+      "methods": ["GET", "PUT"],
+      "pattern": "/api/v1/users/**",
+      "roles": ["RegisteredUser"]
+    },
+    {
+      "methods": ["POST"],
+      "pattern": "/api/v1/messages",
       "roles": ["RegisteredUser"]
     },
     {
       "methods": ["GET"],
-      "pattern": "/api/v1/users/*?/messages",
-      "roles": ["RegisteredUser"]
+      "pattern": "/api/v1/categories",
+      "roles": []
     },
     {
       "methods": ["GET"],
-      "pattern": "/api/v1/users/*",
+      "pattern": "/api/v1/categories/**",
       "roles": []
     }
   ]

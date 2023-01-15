@@ -1,12 +1,15 @@
 package org.unibl.etf.ip.webshop.services.impl;
 
+import io.jsonwebtoken.Jwt;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.unibl.etf.ip.webshop.exceptions.BadRequestException;
 import org.unibl.etf.ip.webshop.exceptions.ConflictException;
 import org.unibl.etf.ip.webshop.exceptions.UnauthorizedException;
 import org.unibl.etf.ip.webshop.models.dto.*;
@@ -19,6 +22,7 @@ import org.unibl.etf.ip.webshop.services.ProductService;
 import org.unibl.etf.ip.webshop.services.UserService;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -63,13 +67,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDTO update(Integer id, UserUpdateDTO request) {
+    public UserDTO update(Integer id, UserUpdateDTO request, Authentication authentication) {
         Optional<UserEntity> userEntity = repository.findById(id);
         if (userEntity.isEmpty())
+            throw new BadRequestException();
+        JwtUserDTO jwtUser = (JwtUserDTO) authentication.getPrincipal();
+        if (!Objects.equals(jwtUser.getId(), userEntity.get().getId()))
             throw new UnauthorizedException();
         if (passwordEncoder.matches(request.getPassword(), userEntity.get().getPassword())) {
             UserEntity user = userEntity.get();
-            user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+            if (request.getNewPassword() != null)
+                user.setPassword(passwordEncoder.encode(request.getNewPassword()));
             user.setFirstName(request.getFirstName());
             user.setLastName(request.getLastName());
             user.setEmail(request.getEmail());
@@ -83,12 +91,18 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<ProductDTO> findAllPurchases(Pageable page, Integer id) {
+    public Page<ProductDTO> findAllPurchases(Pageable page, Integer id, Authentication authentication) {
+        JwtUserDTO jwtUser = (JwtUserDTO) authentication.getPrincipal();
+        if (!id.equals(jwtUser.getId()))
+            throw new UnauthorizedException();
         return productRepository.findAllByBuyer_Id(page, id).map(p -> mapper.map(p, ProductDTO.class));
     }
 
     @Override
-    public Page<ProductDTO> findAllProducts(Pageable page, Integer id) {
+    public Page<ProductDTO> findAllProducts(Pageable page, Integer id, Authentication authentication) {
+        JwtUserDTO jwtUser = (JwtUserDTO) authentication.getPrincipal();
+        if (!id.equals(jwtUser.getId()))
+            throw new UnauthorizedException();
         return productRepository.findAllBySeller_Id(page, id).map(p -> mapper.map(p, ProductDTO.class));
     }
 

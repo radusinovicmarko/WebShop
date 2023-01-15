@@ -12,7 +12,7 @@ import java.util.List;
 
 public interface ProductRepository extends JpaRepository<ProductEntity, Integer> {
     Page<ProductEntity> findAllByStatus(Pageable page, ProductStatus productStatus);
-    Page<ProductEntity> findAllByCategories_IdIn(Pageable page, List<Integer> ids);
+    Page<ProductEntity> findAllByCategories_IdInAndStatus(Pageable page, List<Integer> ids, ProductStatus productStatus);
     Page<ProductEntity> findAllByBuyer_Id(Pageable page, Integer id);
     Page<ProductEntity> findAllBySeller_Id(Pageable page, Integer id);
 }

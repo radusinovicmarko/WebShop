@@ -11,7 +11,7 @@ public interface ProductService {
     ProductDTO findById(Integer id);
     Page<ProductDTO> findAllByCategory(Pageable page, Integer categoryId);
     ProductDTO insert(NewProductDTO request);
-    ProductDTO buy(Integer id, PurchaseDTO purchaseDTO);
+    ProductDTO buy(Integer id, PurchaseDTO purchaseDTO, Authentication authentication);
     CommentDTO addComment(CommentRequestDTO comment);
     ProductDTO delete(Integer id, Authentication authentication);
 }

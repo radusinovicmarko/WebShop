@@ -3,6 +3,7 @@ package org.unibl.etf.ip.webshop.controllers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.unibl.etf.ip.webshop.models.dto.*;
@@ -34,6 +35,7 @@ public class ProductController {
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public ProductDTO insert(@RequestBody NewProductDTO request) {
         return service.insert(request);
     }
@@ -41,8 +43,8 @@ public class ProductController {
     // TODO: update product endpoint?
 
     @PostMapping("/{id}/purchase")
-    public ProductDTO buy(@PathVariable Integer id, @RequestBody PurchaseDTO purchaseDTO) {
-        return service.buy(id, purchaseDTO);
+    public ProductDTO buy(@PathVariable Integer id, @RequestBody PurchaseDTO purchaseDTO, Authentication authentication) {
+        return service.buy(id, purchaseDTO, authentication);
     }
 
     @DeleteMapping("/{id}")
@@ -51,6 +53,7 @@ public class ProductController {
     }
 
     @PostMapping("/{id}/comments")
+    @ResponseStatus(HttpStatus.CREATED)
     public CommentDTO addComment(@RequestBody CommentRequestDTO comment, @PathVariable Integer id) {
         comment.setProductId(id);
         return service.addComment(comment);
