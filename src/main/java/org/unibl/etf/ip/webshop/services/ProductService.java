@@ -2,6 +2,7 @@ package org.unibl.etf.ip.webshop.services;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
 import org.unibl.etf.ip.webshop.models.dto.*;
 import org.unibl.etf.ip.webshop.models.entities.CommentEntity;
 
@@ -12,5 +13,5 @@ public interface ProductService {
     ProductDTO insert(NewProductDTO request);
     ProductDTO buy(Integer id, PurchaseDTO purchaseDTO);
     CommentDTO addComment(CommentRequestDTO comment);
-    ProductDTO delete(Integer id);
+    ProductDTO delete(Integer id, Authentication authentication);
 }

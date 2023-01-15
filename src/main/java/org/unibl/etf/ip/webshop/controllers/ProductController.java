@@ -3,6 +3,7 @@ package org.unibl.etf.ip.webshop.controllers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.unibl.etf.ip.webshop.models.dto.*;
 import org.unibl.etf.ip.webshop.services.ProductService;
@@ -45,8 +46,8 @@ public class ProductController {
     }
 
     @DeleteMapping("/{id}")
-    public ProductDTO delete(@PathVariable Integer id) {
-        return service.delete(id);
+    public ProductDTO delete(@PathVariable Integer id, Authentication authentication) {
+        return service.delete(id, authentication);
     }
 
     @PostMapping("/{id}/comments")

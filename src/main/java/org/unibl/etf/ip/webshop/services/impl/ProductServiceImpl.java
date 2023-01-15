@@ -6,10 +6,12 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.unibl.etf.ip.webshop.exceptions.BadRequestException;
 import org.unibl.etf.ip.webshop.exceptions.NotFoundException;
+import org.unibl.etf.ip.webshop.exceptions.UnauthorizedException;
 import org.unibl.etf.ip.webshop.models.dto.*;
 import org.unibl.etf.ip.webshop.models.entities.*;
 import org.unibl.etf.ip.webshop.models.enums.ProductStatus;
@@ -45,7 +47,7 @@ public class ProductServiceImpl implements ProductService {
     }
     @Override
     public Page<ProductDTO> findAll(Pageable page) {
-        return repository.findAll(page).map(p -> mapper.map(p, ProductDTO.class));
+        return repository.findAllByStatus(page, ProductStatus.Active).map(p -> mapper.map(p, ProductDTO.class));
     }
 
     @Override
@@ -107,8 +109,11 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductDTO delete(Integer id) {
+    public ProductDTO delete(Integer id, Authentication authentication) {
+        JwtUserDTO jwtUser = (JwtUserDTO) authentication.getPrincipal();
         ProductEntity product = repository.findById(id).orElseThrow(NotFoundException::new);
+        if (!Objects.equals(jwtUser.getId(), product.getSeller().getId()))
+            throw new UnauthorizedException();
         product.setStatus(ProductStatus.Inactive);
         return mapper.map(repository.saveAndFlush(product), ProductDTO.class);
     }

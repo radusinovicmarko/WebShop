@@ -1,7 +1,13 @@
 package org.unibl.etf.ip.webshop.services.impl;
 
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,13 +24,20 @@ import java.util.*;
 @Transactional
 public class AuthServiceImpl implements AuthService {
     private final HashMap<String, String> pinCodes = new HashMap<>();
+    private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final EmailService emailService;
     private final ModelMapper mapper;
     private final PasswordEncoder passwordEncoder;
+    @Value("${authorization.token.expiration-time}")
+    private String tokenExpirationTime;
+    @Value("${authorization.token.secret}")
+    private String tokenSecret;
 
     @Autowired
-    public AuthServiceImpl(UserRepository userRepository, EmailService emailService, ModelMapper mapper, PasswordEncoder passwordEncoder) {
+    public AuthServiceImpl(AuthenticationManager authenticationManager, UserRepository userRepository, EmailService emailService,
+                           ModelMapper mapper, PasswordEncoder passwordEncoder) {
+        this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.emailService = emailService;
         this.mapper = mapper;
@@ -45,18 +58,31 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public ILoginResponseDTO login(LoginRequestDTO request) {
-        Optional<UserEntity> userEntity = userRepository.findByUsername(request.getUsername());
-        if (userEntity.isEmpty())
-            throw new UnauthorizedException();
-        if (passwordEncoder.matches(request.getPassword(), userEntity.get().getPassword())) {
-            if (userEntity.get().isActivated())
-                return mapper.map(userEntity.get(), UserDTO.class);
-            else {
-                addPin(userEntity.get().getUsername(), userEntity.get().getEmail());
-                return mapper.map(userEntity.get(), AccountActivationResponseDTO.class);
+        try {
+            Authentication auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+            UserEntity userEntity = userRepository.findByUsername(request.getUsername()).orElseThrow(UnauthorizedException::new);
+            if (userEntity.isActivated()) {
+                JwtUserDTO jwtUser = (JwtUserDTO) auth.getPrincipal();
+                LoginResponseDTO response = mapper.map(userEntity, LoginResponseDTO.class);
+                response.setToken(generateJwt(jwtUser));
+                return response;
+            } else {
+                addPin(userEntity.getUsername(), userEntity.getEmail());
+                return mapper.map(userEntity, AccountActivationResponseDTO.class);
             }
-        } else
+        } catch (Exception exception) {
             throw new UnauthorizedException();
+        }
+    }
+
+    private String generateJwt(JwtUserDTO user) {
+        return Jwts.builder()
+                .setId(user.getId().toString())
+                .setSubject(user.getUsername())
+                .claim("role", user.getRole().name())
+                .setExpiration(new Date(System.currentTimeMillis() + Long.parseLong(tokenExpirationTime)))
+                .signWith(SignatureAlgorithm.HS512, tokenSecret)
+                .compact();
     }
 
     @Override
