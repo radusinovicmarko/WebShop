@@ -67,6 +67,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public LoginResponseDTO findById(Integer id) {
+        return mapper.map(repository.findById(id), LoginResponseDTO.class);
+    }
+
+    @Override
     public UserDTO update(Integer id, UserUpdateDTO request, Authentication authentication) {
         Optional<UserEntity> userEntity = repository.findById(id);
         if (userEntity.isEmpty())

@@ -5,6 +5,7 @@ import jakarta.persistence.PersistenceContext;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -18,9 +19,11 @@ import org.unibl.etf.ip.webshop.models.enums.ProductStatus;
 import org.unibl.etf.ip.webshop.repositories.*;
 import org.unibl.etf.ip.webshop.services.ProductService;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Transactional
 @Service
@@ -51,6 +54,11 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public Page<ProductDTO> findAllByTitle(Pageable page, String title) {
+        return repository.findAllByStatusAndTitleContainingIgnoreCase(page, ProductStatus.Active, title).map(p -> mapper.map(p, ProductDTO.class));
+    }
+
+    @Override
     public ProductDTO findById(Integer id) {
         return mapper.map(repository.findById(id).orElseThrow(NotFoundException::new), ProductDTO.class);
     }
@@ -63,17 +71,54 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public Page<ProductDTO> findAllByAttribute(Pageable page, Integer attributeId, String value, String from, String to) {
+        if (value == null && from == null && to == null)
+            throw new BadRequestException();
+        List<ProductEntity> products = repository.findAllByAttributes_Attribute_IdAndStatus(attributeId, ProductStatus.Active);
+        if (value != null) {
+            if (from != null || to != null)
+                throw new BadRequestException();
+            List<ProductEntity> filteredProducts = products.stream().filter(p -> {
+                for (ProductAttributeEntity pa : p.getAttributes())
+                    if (pa.getAttribute().getId().equals(attributeId) && pa.getValue().toLowerCase().contains(value.toLowerCase()))
+                        return true;
+                return false;
+            }).toList();
+            List<ProductDTO> filteredProductsDTO = filteredProducts.stream().map(p -> mapper.map(p, ProductDTO.class)).toList();
+            return new PageImpl<>(filteredProductsDTO, page, filteredProducts.size());
+        } else {
+            if (from == null || to == null)
+                throw new BadRequestException();
+            double fromDouble, toDouble;
+            try {
+                fromDouble = Double.parseDouble(from);
+                toDouble = Double.parseDouble(to);
+            } catch (NumberFormatException exception) {
+                throw new BadRequestException();
+            }
+            List<ProductEntity> filteredProducts = products.stream().filter(p -> {
+                for (ProductAttributeEntity pa : p.getAttributes())
+                    if (pa.getAttribute().getId().equals(attributeId) && Double.parseDouble(pa.getValue()) >= fromDouble && Double.parseDouble(pa.getValue()) <= toDouble)
+                        return true;
+                return false;
+            }).toList();
+            List<ProductDTO> filteredProductsDTO = filteredProducts.stream().map(p -> mapper.map(p, ProductDTO.class)).toList();
+            return new PageImpl<>(filteredProductsDTO, page, filteredProducts.size());
+        }
+    }
+
+    @Override
     public ProductDTO insert(NewProductDTO request) {
         ProductEntity productEntity = mapper.map(request, ProductEntity.class);
-        CategoryEntity category = categoryRepository.findById(request.getCategoryId()).orElseThrow(BadRequestException::new);
         productEntity.setId(null);
         productEntity.setStatus(ProductStatus.Active);
         productEntity.setNewProduct(true);
         productEntity.setCategories(new ArrayList<>());
-        productEntity.getCategories().add(category);
-        for (ProductAttributeEntity pa : productEntity.getAttributes())
-            pa.setProduct(productEntity);
-        category.getProducts().add(productEntity);
+        for (Integer id : request.getCategoryIds()) {
+            CategoryEntity category = categoryRepository.findById(id).orElseThrow(BadRequestException::new);
+            productEntity.getCategories().add(category);
+            category.getProducts().add(productEntity);
+        }
         productEntity = repository.saveAndFlush(productEntity);
         for (PictureEntity picture : productEntity.getPictures()) {
             picture.setId(null);

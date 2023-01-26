@@ -21,7 +21,9 @@ public class ProductController {
     }
 
     @GetMapping
-    public Page<ProductDTO> findAll(Pageable page) {
+    public Page<ProductDTO> findAll(Pageable page, @RequestParam(required = false) String title) {
+        if (title != null)
+            return service.findAllByTitle(page, title);
         return service.findAll(page);
     }
 
@@ -35,13 +37,17 @@ public class ProductController {
         return service.findAllByCategory(page, id);
     }
 
+    @GetMapping("/attribute/{id}")
+    public Page<ProductDTO> findAllByAttribute(Pageable page, @PathVariable Integer id, @RequestParam(required = false) String value,
+                                               @RequestParam(required = false) String from, @RequestParam(required = false) String to) {
+        return service.findAllByAttribute(page, id, value, from, to);
+    }
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ProductDTO insert(@RequestBody @Valid NewProductDTO request) {
         return service.insert(request);
     }
-
-    // TODO: update product endpoint?
 
     @PostMapping("/{id}/purchase")
     public ProductDTO buy(@PathVariable Integer id, @RequestBody @Valid PurchaseDTO purchaseDTO, Authentication authentication) {

@@ -90,6 +90,13 @@ public class AuthServiceImpl implements AuthService {
         return pinCodes.containsKey(request.getUsername()) && pinCodes.get(request.getUsername()).equals(request.getPin());
     }
 
+    @Override
+    public LoginResponseDTO loginActivate(UserDTO user) {
+        LoginResponseDTO loginResponse = mapper.map(user, LoginResponseDTO.class);
+        loginResponse.setToken(generateJwt(mapper.map(user, JwtUserDTO.class)));
+        return loginResponse;
+    }
+
     private void sendPinViaMail(String username, String mail, String pin) {
         emailService.sendEmail(username, mail, pin);
     }

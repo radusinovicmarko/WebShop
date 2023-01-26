@@ -6,6 +6,11 @@
       "roles": []
     },
     {
+      "methods": ["GET"],
+      "pattern": "/api/v1/auth/state",
+      "roles": []
+    },
+    {
       "methods": ["POST"],
       "pattern": "/api/v1/products",
       "roles": ["RegisteredUser"]

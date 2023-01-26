@@ -17,6 +17,7 @@ public class NewProductDTO {
     private String description;
     @NotNull
     private BigDecimal price;
+    private boolean newProduct;
     @NotBlank
     private String location;
     @NotNull
@@ -27,5 +28,5 @@ public class NewProductDTO {
     @NotEmpty
     private List<ProductAttributeDTO> attributes;
     @NotNull
-    private Integer categoryId;
+    private List<Integer> categoryIds;
 }

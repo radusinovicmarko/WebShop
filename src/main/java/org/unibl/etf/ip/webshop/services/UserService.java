@@ -10,6 +10,7 @@ import java.util.List;
 public interface UserService {
     AccountActivationResponseDTO register(UserRegisterDTO request);
     UserDTO activateAccount(String username);
+    LoginResponseDTO findById(Integer id);
     UserDTO update(Integer id, UserUpdateDTO request, Authentication authentication);
     Page<ProductDTO> findAllPurchases(Pageable page, Integer id, Authentication authentication);
     Page<ProductDTO> findAllProducts(Pageable page, Integer id, Authentication authentication);
