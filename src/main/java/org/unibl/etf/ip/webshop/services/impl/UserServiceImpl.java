@@ -48,7 +48,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public AccountActivationResponseDTO register(UserRegisterDTO request) {
         UserEntity userEntity = mapper.map(request, UserEntity.class);
-        if (repository.existsByUsername(userEntity.getUsername()))
+        if (repository.existsByUsernameAndDeleted(userEntity.getUsername(), false))
             throw new ConflictException();
         userEntity.setId(null);
         userEntity.setPassword(passwordEncoder.encode(userEntity.getPassword()));
@@ -59,7 +59,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO activateAccount(String username) {
-        Optional<UserEntity> user = repository.findByUsername(username);
+        Optional<UserEntity> user = repository.findByUsernameAndDeleted(username, false);
         if (user.isEmpty())
             throw new UnauthorizedException();
         user.get().setActivated(true);

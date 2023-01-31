@@ -37,10 +37,14 @@ public class ProductController {
         return service.findAllByCategory(page, id);
     }
 
-    @GetMapping("/attribute/{id}")
+    /*@GetMapping("/attribute/{id}")
     public Page<ProductDTO> findAllByAttribute(Pageable page, @PathVariable Integer id, @RequestParam(required = false) String value,
                                                @RequestParam(required = false) String from, @RequestParam(required = false) String to) {
         return service.findAllByAttribute(page, id, value, from, to);
+    }*/
+    @GetMapping("/attributes")
+    public Page<ProductDTO> findAllByAttributes(Pageable page, @RequestParam(required = false) String filters) {
+        return service.findAllByAttributes(page, filters);
     }
 
     @PostMapping

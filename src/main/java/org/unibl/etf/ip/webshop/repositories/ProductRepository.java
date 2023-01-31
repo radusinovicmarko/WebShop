@@ -15,7 +15,7 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Integer>
     Page<ProductEntity> findAllByStatusAndTitleContainingIgnoreCase(Pageable page, ProductStatus productStatus, String title);
     Page<ProductEntity> findAllByStatus(Pageable page, ProductStatus productStatus);
     Page<ProductEntity> findAllByCategories_IdInAndStatus(Pageable page, List<Integer> ids, ProductStatus productStatus);
-    List<ProductEntity> findAllByAttributes_Attribute_IdAndStatus(Integer id, ProductStatus productStatus);
+    List<ProductEntity> findAllByAttributes_Attribute_IdInAndStatus(List<Integer> id, ProductStatus productStatus);
     Page<ProductEntity> findAllByBuyer_Id(Pageable page, Integer id);
     Page<ProductEntity> findAllBySeller_Id(Pageable page, Integer id);
 }

@@ -60,7 +60,7 @@ public class AuthServiceImpl implements AuthService {
     public ILoginResponseDTO login(LoginRequestDTO request) {
         try {
             Authentication auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
-            UserEntity userEntity = userRepository.findByUsername(request.getUsername()).orElseThrow(UnauthorizedException::new);
+            UserEntity userEntity = userRepository.findByUsernameAndDeleted(request.getUsername(), false).orElseThrow(UnauthorizedException::new);
             if (userEntity.isActivated()) {
                 JwtUserDTO jwtUser = (JwtUserDTO) auth.getPrincipal();
                 LoginResponseDTO response = mapper.map(userEntity, LoginResponseDTO.class);

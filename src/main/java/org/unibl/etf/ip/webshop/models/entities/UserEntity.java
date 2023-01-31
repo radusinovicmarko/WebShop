@@ -47,6 +47,9 @@ public class UserEntity {
     @Basic
     @Column(name = "location", nullable = false, length = 50)
     private String location;
+    @Basic
+    @Column(name = "deleted", nullable = false)
+    private boolean deleted;
     @OneToMany(mappedBy = "user")
     @ToString.Exclude
     @JsonIgnore

@@ -1,5 +1,8 @@
 package org.unibl.etf.ip.webshop.services.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.modelmapper.ModelMapper;
@@ -19,11 +22,11 @@ import org.unibl.etf.ip.webshop.models.enums.ProductStatus;
 import org.unibl.etf.ip.webshop.repositories.*;
 import org.unibl.etf.ip.webshop.services.ProductService;
 
-import java.math.BigDecimal;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Transactional
 @Service
@@ -71,40 +74,54 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Page<ProductDTO> findAllByAttribute(Pageable page, Integer attributeId, String value, String from, String to) {
-        if (value == null && from == null && to == null)
+    public Page<ProductDTO> findAllByAttributes(Pageable page, String filters) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        List<AttributeSearchDTO> searchFilters;
+        try {
+            String filtersDecoded = URLDecoder.decode(filters, StandardCharsets.UTF_16);
+            System.out.println(filtersDecoded);
+            searchFilters = objectMapper.readValue(filtersDecoded, new TypeReference<>() {});
+        } catch (JsonProcessingException e) {
             throw new BadRequestException();
-        List<ProductEntity> products = repository.findAllByAttributes_Attribute_IdAndStatus(attributeId, ProductStatus.Active);
-        if (value != null) {
-            if (from != null || to != null)
-                throw new BadRequestException();
-            List<ProductEntity> filteredProducts = products.stream().filter(p -> {
-                for (ProductAttributeEntity pa : p.getAttributes())
-                    if (pa.getAttribute().getId().equals(attributeId) && pa.getValue().toLowerCase().contains(value.toLowerCase()))
-                        return true;
-                return false;
-            }).toList();
-            List<ProductDTO> filteredProductsDTO = filteredProducts.stream().map(p -> mapper.map(p, ProductDTO.class)).toList();
-            return new PageImpl<>(filteredProductsDTO, page, filteredProducts.size());
-        } else {
-            if (from == null || to == null)
-                throw new BadRequestException();
-            double fromDouble, toDouble;
-            try {
-                fromDouble = Double.parseDouble(from);
-                toDouble = Double.parseDouble(to);
-            } catch (NumberFormatException exception) {
-                throw new BadRequestException();
-            }
-            List<ProductEntity> filteredProducts = products.stream().filter(p -> {
-                for (ProductAttributeEntity pa : p.getAttributes())
-                    if (pa.getAttribute().getId().equals(attributeId) && Double.parseDouble(pa.getValue()) >= fromDouble && Double.parseDouble(pa.getValue()) <= toDouble)
-                        return true;
-                return false;
-            }).toList();
-            List<ProductDTO> filteredProductsDTO = filteredProducts.stream().map(p -> mapper.map(p, ProductDTO.class)).toList();
-            return new PageImpl<>(filteredProductsDTO, page, filteredProducts.size());
         }
+        List<Integer> ids = searchFilters.stream().map(AttributeSearchDTO::getId).toList();
+        List<ProductEntity> filteredProducts = repository.findAllByAttributes_Attribute_IdInAndStatus(ids, ProductStatus.Active);
+        for (AttributeSearchDTO filter : searchFilters) {
+            String value = filter.getValue();
+            String from = filter.getFrom();
+            String to = filter.getTo();
+            Integer attributeId = filter.getId();
+            if (value.isEmpty() && from.isEmpty() && to.isEmpty())
+                throw new BadRequestException();
+            if (!value.isEmpty()) {
+                if (!from.isEmpty() || !to.isEmpty())
+                    throw new BadRequestException();
+                filteredProducts = filteredProducts.stream().filter(p -> {
+                    for (ProductAttributeEntity pa : p.getAttributes())
+                        if (pa.getAttribute().getId().equals(attributeId) && pa.getValue().toLowerCase().contains(value.toLowerCase()))
+                            return true;
+                    return false;
+                }).toList();
+            } else {
+                if (from.isEmpty() || to.isEmpty())
+                    throw new BadRequestException();
+                double fromDouble, toDouble;
+                try {
+                    fromDouble = Double.parseDouble(from);
+                    toDouble = Double.parseDouble(to);
+                } catch (NumberFormatException exception) {
+                    throw new BadRequestException();
+                }
+                filteredProducts = filteredProducts.stream().filter(p -> {
+                    for (ProductAttributeEntity pa : p.getAttributes())
+                        if (pa.getAttribute().getId().equals(attributeId) && Double.parseDouble(pa.getValue()) >= fromDouble && Double.parseDouble(pa.getValue()) <= toDouble)
+                            return true;
+                    return false;
+                }).toList();
+            }
+        }
+        List<ProductDTO> filteredProductsDTO = filteredProducts.stream().map(p -> mapper.map(p, ProductDTO.class)).toList();
+        return new PageImpl<>(filteredProductsDTO, page, filteredProducts.size());
     }
 
     @Override

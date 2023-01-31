@@ -7,6 +7,6 @@ import org.unibl.etf.ip.webshop.models.entities.UserEntity;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<UserEntity, Integer> {
-    public boolean existsByUsername(String username);
-    public Optional<UserEntity> findByUsername(String username);
+    public boolean existsByUsernameAndDeleted(String username, Boolean deleted);
+    public Optional<UserEntity> findByUsernameAndDeleted(String username, Boolean deleted);
 }
