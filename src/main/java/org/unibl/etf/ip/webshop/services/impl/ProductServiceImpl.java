@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import org.apache.log4j.Logger;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -125,7 +126,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductDTO insert(NewProductDTO request) {
+    public ProductDTO insert(NewProductDTO request, Authentication authentication) {
         ProductEntity productEntity = mapper.map(request, ProductEntity.class);
         productEntity.setId(null);
         productEntity.setStatus(ProductStatus.Active);
@@ -146,6 +147,8 @@ public class ProductServiceImpl implements ProductService {
             pa.setProduct(productEntity);
             productAttributeEntityRepository.saveAndFlush(pa);
         }
+        JwtUserDTO jwtUser = (JwtUserDTO) authentication.getPrincipal();
+        Logger.getLogger(getClass()).info("Product create request from user: " + jwtUser.getUsername() + " for product: " + request.getTitle());
         return mapper.map(productEntity, ProductDTO.class);
     }
 
@@ -163,15 +166,18 @@ public class ProductServiceImpl implements ProductService {
         product.getBuyer().setId(purchaseDTO.getBuyerId());
         product.setPurchaseDate(purchaseDTO.getPurchaseDate());
         product.setStatus(ProductStatus.Sold);
+        Logger.getLogger(getClass()).info("Product purchase request from user: " + jwtUser.getUsername() + " for product with id: " + id);
         return mapper.map(repository.saveAndFlush(product), ProductDTO.class);
     }
 
     @Override
-    public CommentDTO addComment(CommentRequestDTO comment) {
+    public CommentDTO addComment(CommentRequestDTO comment, Authentication authentication) {
         CommentEntity commentEntity = mapper.map(comment, CommentEntity.class);
         commentEntity.setId(null);
         commentEntity = commentRepository.saveAndFlush(commentEntity);
         entityManager.refresh(commentEntity);
+        JwtUserDTO jwtUser = (JwtUserDTO) authentication.getPrincipal();
+        Logger.getLogger(getClass()).info("Comment create request from user: " + jwtUser.getUsername());
         return mapper.map(commentEntity, CommentDTO.class);
     }
 
@@ -184,6 +190,7 @@ public class ProductServiceImpl implements ProductService {
         if (product.getStatus() != ProductStatus.Active)
             throw new BadRequestException();
         product.setStatus(ProductStatus.Inactive);
+        Logger.getLogger(getClass()).info("Product delete request from user: " + jwtUser.getUsername() + " for product with id: " + id);
         return mapper.map(repository.saveAndFlush(product), ProductDTO.class);
     }
 }

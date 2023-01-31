@@ -1,5 +1,6 @@
 package org.unibl.etf.ip.webshop.services.impl;
 
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -26,5 +27,6 @@ public class EmailServiceImpl implements EmailService {
         mailMessage.setSubject(TITLE);
         mailMessage.setText(text);
         mailSender.send(mailMessage);
+        Logger.getLogger(getClass()).info("Activation e-mail sent to mail: " + mail + " of user: " + username);
     }
 }

@@ -1,6 +1,6 @@
 package org.unibl.etf.ip.webshop.services.impl;
 
-import io.jsonwebtoken.Jwt;
+import org.apache.log4j.Logger;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -18,7 +18,6 @@ import org.unibl.etf.ip.webshop.repositories.MessageRepository;
 import org.unibl.etf.ip.webshop.repositories.ProductRepository;
 import org.unibl.etf.ip.webshop.repositories.UserRepository;
 import org.unibl.etf.ip.webshop.services.AuthService;
-import org.unibl.etf.ip.webshop.services.ProductService;
 import org.unibl.etf.ip.webshop.services.UserService;
 
 import java.util.List;
@@ -54,6 +53,7 @@ public class UserServiceImpl implements UserService {
         userEntity.setPassword(passwordEncoder.encode(userEntity.getPassword()));
         userEntity = repository.saveAndFlush(userEntity);
         authService.addPin(userEntity.getUsername(), userEntity.getEmail());
+        Logger.getLogger(getClass()).info("Register request from user: " + request.getUsername());
         return mapper.map(userEntity, AccountActivationResponseDTO.class);
     }
 
@@ -89,6 +89,7 @@ public class UserServiceImpl implements UserService {
             user.setLocation(request.getLocation());
             user.setContactPhone(request.getContactPhone());
             user.setAvatarUrl(request.getAvatarUrl());
+            Logger.getLogger(getClass()).info("Profile update request from user: " + jwtUser.getUsername());
             return mapper.map(repository.saveAndFlush(user), UserDTO.class);
         }
         else

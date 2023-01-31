@@ -2,6 +2,7 @@ package org.unibl.etf.ip.webshop.services.impl;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import org.apache.log4j.Logger;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -65,6 +66,7 @@ public class AuthServiceImpl implements AuthService {
                 JwtUserDTO jwtUser = (JwtUserDTO) auth.getPrincipal();
                 LoginResponseDTO response = mapper.map(userEntity, LoginResponseDTO.class);
                 response.setToken(generateJwt(jwtUser));
+                Logger.getLogger(getClass()).info("User: " + jwtUser.getUsername() + " logged in.");
                 return response;
             } else {
                 addPin(userEntity.getUsername(), userEntity.getEmail());
@@ -94,6 +96,7 @@ public class AuthServiceImpl implements AuthService {
     public LoginResponseDTO loginActivate(UserDTO user) {
         LoginResponseDTO loginResponse = mapper.map(user, LoginResponseDTO.class);
         loginResponse.setToken(generateJwt(mapper.map(user, JwtUserDTO.class)));
+        Logger.getLogger(getClass()).info("Account activation  request from user: " + user.getUsername());
         return loginResponse;
     }
 

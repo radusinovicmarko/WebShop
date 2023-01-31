@@ -3,6 +3,7 @@ package org.unibl.etf.ip.webshop.controllers;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.unibl.etf.ip.webshop.models.dto.MessageDTO;
 import org.unibl.etf.ip.webshop.models.dto.MessageRequestDTO;
@@ -22,7 +23,7 @@ public class MessageController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public MessageDTO crete(@RequestBody @Valid MessageRequestDTO request) {
-        return service.create(request);
+    public MessageDTO crete(@RequestBody @Valid MessageRequestDTO request, Authentication authentication) {
+        return service.create(request, authentication);
     }
 }

@@ -13,5 +13,5 @@ public class MessageDTO {
     private String title;
     private String content;
     private boolean messageRead;
-    private UserEntity user;
+    private UserDTO user;
 }

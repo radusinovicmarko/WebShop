@@ -37,11 +37,6 @@ public class ProductController {
         return service.findAllByCategory(page, id);
     }
 
-    /*@GetMapping("/attribute/{id}")
-    public Page<ProductDTO> findAllByAttribute(Pageable page, @PathVariable Integer id, @RequestParam(required = false) String value,
-                                               @RequestParam(required = false) String from, @RequestParam(required = false) String to) {
-        return service.findAllByAttribute(page, id, value, from, to);
-    }*/
     @GetMapping("/attributes")
     public Page<ProductDTO> findAllByAttributes(Pageable page, @RequestParam(required = false) String filters) {
         return service.findAllByAttributes(page, filters);
@@ -49,8 +44,8 @@ public class ProductController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ProductDTO insert(@RequestBody @Valid NewProductDTO request) {
-        return service.insert(request);
+    public ProductDTO insert(@RequestBody @Valid NewProductDTO request, Authentication authentication) {
+        return service.insert(request, authentication);
     }
 
     @PostMapping("/{id}/purchase")
@@ -65,8 +60,8 @@ public class ProductController {
 
     @PostMapping("/{id}/comments")
     @ResponseStatus(HttpStatus.CREATED)
-    public CommentDTO addComment(@RequestBody @Valid CommentRequestDTO comment, @PathVariable Integer id) {
+    public CommentDTO addComment(@RequestBody @Valid CommentRequestDTO comment, @PathVariable Integer id, Authentication authentication) {
         comment.setProductId(id);
-        return service.addComment(comment);
+        return service.addComment(comment, authentication);
     }
 }
