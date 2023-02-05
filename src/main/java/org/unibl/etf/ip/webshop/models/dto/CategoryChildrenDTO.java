@@ -8,5 +8,5 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class CategoryChildrenDTO extends CategoryDTO {
-    private List<CategoryDTO> subcategories;
+    private List<CategoryChildrenDTO> subcategories;
 }

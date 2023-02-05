@@ -32,6 +32,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public List<CategoryChildrenDTO> findAll() {
-        return repository.findAllByParentCategoryIsNull().stream().map(c -> mapper.map(c, CategoryChildrenDTO.class)).collect(Collectors.toList());
+        return repository.findAllByParentCategoryIsNull().stream().map(c -> mapper.map(c, CategoryChildrenDTO.class)).toList();
     }
+
 }

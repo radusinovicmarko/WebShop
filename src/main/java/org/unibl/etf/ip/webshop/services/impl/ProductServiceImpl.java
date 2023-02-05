@@ -80,7 +80,6 @@ public class ProductServiceImpl implements ProductService {
         List<AttributeSearchDTO> searchFilters;
         try {
             String filtersDecoded = URLDecoder.decode(filters, StandardCharsets.UTF_16);
-            System.out.println(filtersDecoded);
             searchFilters = objectMapper.readValue(filtersDecoded, new TypeReference<>() {});
         } catch (JsonProcessingException e) {
             throw new BadRequestException();
@@ -130,7 +129,6 @@ public class ProductServiceImpl implements ProductService {
         ProductEntity productEntity = mapper.map(request, ProductEntity.class);
         productEntity.setId(null);
         productEntity.setStatus(ProductStatus.Active);
-        productEntity.setNewProduct(true);
         productEntity.setCategories(new ArrayList<>());
         for (Integer id : request.getCategoryIds()) {
             CategoryEntity category = categoryRepository.findById(id).orElseThrow(BadRequestException::new);
