@@ -49,7 +49,6 @@ public class AuthServiceImpl implements AuthService {
         Random rnd = new Random();
         String pin = String.format("%04d", rnd.nextInt(10000));
         List<String> codes =  new ArrayList<>(pinCodes.values());
-        // TODO: Check if necessary
         while (codes.contains(pin)) {
             pin = String.format("%04d", rnd.nextInt(10000));
         }
